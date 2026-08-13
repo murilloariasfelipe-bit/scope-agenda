@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Scope — Agenda</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:#f0f4f8;min-height:100vh;color:#1a3d5c}
+:root{
+  --verde:#4a7c3f;--rojo:#c0392b;--amarillo:#d4a017;--morado:#7b2d8b;--rosa:#c2185b;--azul:#1a3d5c;--cyan:#4db8c8;
+}
+
+/* TOP BAR */
+.topbar{background:var(--azul);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar .brand{color:#fff;font-size:16px;font-weight:800;letter-spacing:1px}
+.topbar .sub{color:var(--cyan);font-size:10px;letter-spacing:2px}
+.topbar-actions{display:flex;gap:8px}
+.icon-btn{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:8px;width:38px;height:38px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+
+/* TABS */
+.tabs{display:flex;background:#fff;border-bottom:2px solid #e0eef5}
+.tab{flex:1;padding:12px 4px;font-size:12px;font-weight:700;text-align:center;cursor:pointer;color:#6b8fa3;border-bottom:3px solid transparent;margin-bottom:-2px;touch-action:manipulation}
+.tab.active{color:var(--azul);border-bottom-color:var(--azul)}
+
+/* LEYENDA */
+.legend{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;background:#fff;border-bottom:1px solid #e0eef5}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#444}
+.leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+
+/* CALENDARIO MES */
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #e0eef5}
+.cal-nav{background:none;border:none;font-size:22px;color:var(--azul);cursor:pointer;padding:4px 10px;touch-action:manipulation}
+.cal-title{font-size:16px;font-weight:800;color:var(--azul);text-transform:capitalize}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);background:#fff}
+.cal-dow{text-align:center;padding:8px 2px;font-size:11px;font-weight:700;color:#6b8fa3;background:#f8fbfd;border-bottom:1px solid #e0eef5}
+.cal-day{min-height:72px;padding:4px 3px;border-right:1px solid #f0f4f8;border-bottom:1px solid #f0f4f8;position:relative;cursor:pointer;touch-action:manipulation}
+.cal-day:hover{background:#f4f9fc}
+.cal-day.other{background:#fafcfe}
+.cal-day.today .day-num{background:var(--azul);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.day-num{font-size:12px;font-weight:700;color:#1a3d5c;margin-bottom:2px;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.cal-day.other .day-num{color:#bbb}
+.evt-chip{font-size:9px;font-weight:700;color:#fff;border-radius:4px;padding:1px 4px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.more-chip{font-size:9px;color:#6b8fa3;font-weight:600;padding-left:2px}
+
+/* LISTA */
+.list-wrap{padding:12px}
+.day-section{margin-bottom:14px}
+.day-label{font-size:13px;font-weight:800;color:var(--azul);padding:6px 0;border-bottom:2px solid var(--cyan);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.day-label .day-date{font-size:11px;color:#6b8fa3;font-weight:600}
+.cita-row{border-radius:10px;padding:12px 14px;margin-bottom:8px;color:#fff;cursor:pointer;touch-action:manipulation}
+.cita-row .cr-name{font-size:15px;font-weight:700}
+.cita-row .cr-info{font-size:12px;opacity:.88;margin-top:3px}
+.cita-row .cr-actions{display:flex;gap:6px;margin-top:10px}
+.cr-btn{padding:6px 12px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.22);color:#fff;touch-action:manipulation}
+
+/* NUEVA CITA */
+.form-wrap{padding:14px}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid #d0e4ee}
+.card-title{font-size:13px;font-weight:700;color:var(--azul);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.badge{background:var(--azul);color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;display:inline-flex;align-items:center;justify-content:center}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:10px;font-weight:700;color:#6b8fa3;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select,.field textarea{border:1.5px solid #c8dce8;border-radius:10px;padding:12px 14px;font-size:15px;color:#1a3d5c;outline:none;width:100%;background:#fff;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:var(--azul)}
+.field textarea{resize:vertical;min-height:64px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-main{width:100%;padding:15px;background:var(--azul);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;min-height:52px;touch-action:manipulation}
+.btn-main:active{opacity:.85}
+
+/* TIPO BADGES */
+.tipo-select-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.tipo-opt{padding:10px 6px;border-radius:10px;border:2px solid transparent;font-size:12px;font-weight:700;color:#fff;text-align:center;cursor:pointer;touch-action:manipulation;opacity:.7}
+.tipo-opt.sel{opacity:1;border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.2)}
+
+/* ALERTAS */
+.alert-wrap{padding:14px}
+.alerta-ok{background:#e0f5ea;border:1px solid #a8dfc0;border-radius:10px;padding:12px;font-size:13px;font-weight:700;color:#1a7a4a;text-align:center;margin-top:10px}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:999;padding:0}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:22px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:800;color:var(--azul);margin-bottom:14px}
+.modal-close{float:right;background:none;border:none;font-size:22px;color:#6b8fa3;cursor:pointer;touch-action:manipulation}
+.med-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f4f9fc;border-radius:10px;margin-bottom:8px}
+.med-av{width:36px;height:36px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.med-info{flex:1}
+.med-name{font-size:14px;font-weight:700;color:var(--azul)}
+.med-sub{font-size:11px;color:#6b8fa3}
+.btn-del{background:none;border:none;color:#c0392b;font-size:18px;cursor:pointer;padding:4px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="brand">SCOPE HEALTHCARE</div>
+    <div class="sub">AGENDA MÉDICA</div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="btn-medicos" title="Médicos">👥</button>
+    <button class="icon-btn" id="btn-nueva-top" title="Nueva cita">➕</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tab-mes" onclick="switchTab('mes')">📅 Mes</div>
+  <div class="tab" id="tab-lista" onclick="switchTab('lista')">📋 Lista</div>
+  <div class="tab" id="tab-nueva" onclick="switchTab('nueva')">➕ Nueva</div>
+  <div class="tab" id="tab-alertas" onclick="switchTab('alertas')">🔔 Alertas</div>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:var(--verde)"></div>Inserción balón</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--rojo)"></div>Retiro balón</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--amarillo)"></div>Val. Virtual</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--morado)"></div>Val. Presencial</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--rosa)"></div>Control</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--cyan)"></div>Otros</div>
+</div>
+
+<!-- MES -->
+<div id="sec-mes">
+  <div class="cal-header">
+    <button class="cal-nav" id="prev-mes">‹</button>
+    <div class="cal-title" id="cal-title"></div>
+    <button class="cal-nav" id="next-mes">›</button>
+  </div>
+  <div class="cal-grid">
+    <div class="cal-dow">L</div><div class="cal-dow">M</div><div class="cal-dow">M</div>
+    <div class="cal-dow">J</div><div class="cal-dow">V</div><div class="cal-dow">S</div><div class="cal-dow">D</div>
+  </div>
+  <div class="cal-grid" id="cal-body"></div>
+</div>
+
+<!-- LISTA -->
+<div id="sec-lista" class="hidden">
+  <div class="list-wrap" id="list-wrap"></div>
+</div>
+
+<!-- NUEVA -->
+<div id="sec-nueva" class="hidden">
+  <div class="form-wrap">
+    <div class="card">
+      <div class="card-title"><span class="badge">1</span> Paciente</div>
+      <div class="field"><label>Nombre completo</label><input type="text" id="pac-nombre" placeholder="Ej. María García"></div>
+      <div class="row2">
+        <div class="field"><label>Teléfono</label><input type="tel" id="pac-tel" placeholder="+57 300..."></div>
+        <div class="field"><label>Programa</label>
+          <select id="pac-prog">
+            <option value="">— Programa —</option>
+            <option>PreCare Scope</option><option>Scope Vital 6M</option>
+            <option>Scope Vital 365</option><option>Balón + Vital 365</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge">2</span> Tipo de cita</div>
+      <div class="tipo-select-grid" id="tipo-grid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge">3</span> Médico y horario</div>
+      <div class="field"><label>Médico / Especialista</label><select id="cita-medico"></select></div>
+      <div class="row2">
+        <div class="field"><label>Fecha</label><input type="date" id="cita-fecha"></div>
+        <div class="field"><label>Hora inicio</label><input type="time" id="cita-hora"></div>
+      </div>
+      <div class="field"><label>Notas (opcional)</label><textarea id="cita-notas" placeholder="Indicaciones..."></textarea></div>
+      <button class="btn-main" id="btn-guardar">📅 AGENDAR CITA</button>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTAS -->
+<div id="sec-alertas" class="hidden">
+  <div class="alert-wrap">
+    <div class="card">
+      <div class="card-title">🔔 Alertas a médicos</div>
+      <div class="field"><label>Médico</label><select id="alerta-medico"></select></div>
+      <div class="field"><label>Período</label>
+        <select id="alerta-periodo">
+          <option value="hoy">Citas de hoy</option>
+          <option value="semana">Citas de esta semana</option>
+        </select>
+      </div>
+      <button class="btn-main" onclick="enviarEmail()">📧 Enviar correo al médico</button>
+      <button class="btn-main" style="background:var(--verde);margin-top:8px" onclick="enviarWA()">💬 WhatsApp al médico</button>
+      <div style="border-top:1px solid #d0e4ee;margin:16px 0;padding-top:16px">
+        <div style="font-size:11px;font-weight:700;color:#6b8fa3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📋 Resumen diario — todos los médicos</div>
+        <button class="btn-main" style="background:var(--azul)" onclick="enviarEmailDiario()">📧 Resumen diario por correo</button>
+        <button class="btn-main" style="background:var(--verde);margin-top:8px" onclick="enviarWADiario()">💬 Resumen diario por WhatsApp</button>
+      </div>
+      <div id="alerta-ok" class="hidden alerta-ok"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MÉDICOS -->
+<div class="overlay hidden" id="modal-medicos">
+  <div class="modal">
+    <button class="modal-close" onclick="closeMedicos()">✕</button>
+    <h3>👥 Médicos</h3>
+    <div id="medicos-list"></div>
+    <div style="border-top:1px solid #e0eef5;padding-top:14px;margin-top:8px">
+      <div style="font-size:11px;font-weight:700;color:#6b8fa3;text-transform:uppercase;margin-bottom:10px">Agregar médico</div>
+      <div class="field"><label>Nombre</label><input type="text" id="nm-nombre" placeholder="Dr. Nombre Apellido"></div>
+      <div class="field"><label>Especialidad</label>
+        <select id="nm-esp">
+          <option value="">—</option>
+          <option>Gastroenterología</option><option>Deportología</option><option>Psicología</option>
+          <option>Nutrición</option><option>Asesoría de imagen</option><option>General</option>
+        </select>
+      </div>
+      <div class="field"><label>Correo</label><input type="email" id="nm-email" placeholder="medico@scope.com"></div>
+      <div class="field"><label>WhatsApp</label><input type="tel" id="nm-wa" placeholder="+573001234567"></div>
+      <button class="btn-main" onclick="agregarMedico()">+ Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE CITA -->
+<div class="overlay hidden" id="modal-cita">
+  <div class="modal">
+    <button class="modal-close" onclick="closeCita()">✕</button>
+    <h3 id="modal-cita-title"></h3>
+    <div id="modal-cita-body"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <a id="modal-gcal" href="#" target="_blank" style="flex:1;padding:12px;background:#4285f4;color:#fff;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;text-align:center">📆 Google Cal</a>
+      <button id="modal-wa" style="flex:1;padding:12px;background:#25d366;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">💬 WA Paciente</button>
+      <button id="modal-del" style="padding:12px;background:#fff0f0;color:#c0392b;border:1.5px solid #f5c6c6;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">🗑</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TIPOS=[
+  {key:'insercion',label:'Inserción Balón Gástrico',color:'var(--verde)'},
+  {key:'retiro',label:'Retiro Balón Gástrico',color:'var(--rojo)'},
+  {key:'val-virtual',label:'Valoración Virtual',color:'var(--amarillo)'},
+  {key:'val-presencial',label:'Valoración Presencial',color:'var(--morado)'},
+  {key:'control',label:'Cita de Control',color:'var(--rosa)'},
+  {key:'gastro',label:'Gastroenterología',color:'var(--cyan)'},
+  {key:'deporte',label:'Deportología',color:'var(--cyan)'},
+  {key:'psico',label:'Psicología',color:'var(--cyan)'},
+  {key:'nutri',label:'Nutrición',color:'var(--cyan)'},
+  {key:'imagen',label:'Asesoría de Imagen',color:'var(--cyan)'},
+];
+function tipoColor(key){const t=TIPOS.find(x=>x.key===key);return t?t.color:'var(--cyan)';}
+function tipoLabel(key){const t=TIPOS.find(x=>x.key===key);return t?t.label:key;}
+
+let medicos=JSON.parse(localStorage.getItem('sc_medicos')||'[]');
+let citas=JSON.parse(localStorage.getItem('sc_citas')||'[]');
+let calYear,calMonth,tipoSel='';
+
+if(!medicos.length){
+  medicos=[{id:1,nombre:'Dr. Andrés Murillo Arias',especialidad:'Gastroenterología',email:'moromurillo@gmail.com',wa:'+573164688878'}];
+  saveMedicos();
+}
+
+const hoyStr=new Date().toISOString().slice(0,10);
+const hoy=new Date();
+calYear=hoy.getFullYear();calMonth=hoy.getMonth();
+
+function saveMedicos(){localStorage.setItem('sc_medicos',JSON.stringify(medicos));renderSelects();}
+function saveCitas(){localStorage.setItem('sc_citas',JSON.stringify(citas));}
+
+function renderSelects(){
+  const base='<option value="">— Seleccionar —</option>'+medicos.map(m=>`<option value="${m.id}">${m.nombre}</option>`).join('');
+  document.getElementById('cita-medico').innerHTML=base;
+  document.getElementById('alerta-medico').innerHTML=base;
+}
+
+/* TABS */
+function switchTab(t){
+  ['mes','lista','nueva','alertas'].forEach(s=>{
+    document.getElementById('sec-'+s).classList.toggle('hidden',s!==t);
+    document.getElementById('tab-'+s).classList.toggle('active',s===t);
+  });
+  if(t==='mes')renderMes();
+  if(t==='lista')renderLista();
+}
+
+/* TIPO GRID */
+function renderTipoGrid(){
+  document.getElementById('tipo-grid').innerHTML=TIPOS.map(t=>`
+    <div class="tipo-opt${tipoSel===t.key?' sel':''}" style="background:${t.color}" onclick="selTipo('${t.key}')">${t.label}</div>
+  `).join('');
+}
+function selTipo(k){tipoSel=k;renderTipoGrid();}
+renderTipoGrid();
+
+/* CALENDARIO MES */
+function renderMes(){
+  const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-title').textContent=months[calMonth]+' '+calYear;
+  const first=new Date(calYear,calMonth,1);
+  let startDow=(first.getDay()+6)%7; // lunes=0
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const prevDays=new Date(calYear,calMonth,0).getDate();
+  const body=document.getElementById('cal-body');
+  body.innerHTML='';
+  let cells=[];
+  for(let i=startDow-1;i>=0;i--)cells.push({d:prevDays-i,cur:false});
+  for(let d=1;d<=daysInMonth;d++)cells.push({d,cur:true});
+  while(cells.length%7!==0)cells.push({d:cells.length-startDow-daysInMonth+1,cur:false});
+  cells.forEach(({d,cur})=>{
+    const dateStr=cur?`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`:'';
+    const isToday=dateStr===hoyStr;
+    const div=document.createElement('div');
+    div.className='cal-day'+(cur?'':' other')+(isToday?' today':'');
+    const evts=cur?citas.filter(c=>c.fecha===dateStr):[];
+    div.innerHTML=`<div class="day-num">${d}</div>`
+      +evts.slice(0,3).map(c=>`<div class="evt-chip" style="background:${tipoColor(c.tipo)}" onclick="event.stopPropagation();showCita(${c.id})">${c.nombre.split(' ')[0]}</div>`).join('')
+      +(evts.length>3?`<div class="more-chip">+${evts.length-3} más</div>`:'');
+    if(cur)div.onclick=()=>{switchTab('lista');filterFecha=dateStr;renderLista();};
+    body.appendChild(div);
+  });
+}
+
+document.getElementById('prev-mes').addEventListener('click',()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderMes();});
+document.getElementById('next-mes').addEventListener('click',()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderMes();});
+
+/* LISTA */
+let filterFecha=null;
+function renderLista(){
+  const wrap=document.getElementById('list-wrap');
+  let lista=[...citas].sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora));
+  if(filterFecha){lista=lista.filter(c=>c.fecha===filterFecha);filterFecha=null;}
+  if(!lista.length){wrap.innerHTML='<div style="text-align:center;padding:40px 0;color:#6b8fa3;font-size:14px">No hay citas agendadas.</div>';return;}
+  const byDay={};
+  lista.forEach(c=>{if(!byDay[c.fecha])byDay[c.fecha]=[];byDay[c.fecha].push(c);});
+  wrap.innerHTML=Object.entries(byDay).map(([fecha,evts])=>{
+    const d=new Date(fecha+'T12:00');
+    const label=d.toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long'});
+    const rows=evts.map(c=>`
+      <div class="cita-row" style="background:${tipoColor(c.tipo)}" onclick="showCita(${c.id})">
+        <div class="cr-name">${c.nombre}</div>
+        <div class="cr-info">${c.hora} · ${tipoLabel(c.tipo)}${c.medicoNombre?' · '+c.medicoNombre:''}</div>
+        ${c.programa?`<div class="cr-info">${c.programa}</div>`:''}
+      </div>`).join('');
+    return `<div class="day-section"><div class="day-label"><span>${label.charAt(0).toUpperCase()+label.slice(1)}</span><span class="day-date">${fecha}</span></div>${rows}</div>`;
+  }).join('');
+}
+
+/* AGENDAR */
+tap(document.getElementById('btn-guardar'),agendarCita);
+function agendarCita(){
+  const nombre=document.getElementById('pac-nombre').value.trim();
+  const tel=document.getElementById('pac-tel').value.trim();
+  const programa=document.getElementById('pac-prog').value;
+  const medicoId=parseInt(document.getElementById('cita-medico').value);
+  const fecha=document.getElementById('cita-fecha').value;
+  const hora=document.getElementById('cita-hora').value;
+  const notas=document.getElementById('cita-notas').value.trim();
+  if(!nombre){alert('Ingresa el nombre del paciente');return;}
+  if(!tipoSel){alert('Selecciona el tipo de cita');return;}
+  if(!medicoId){alert('Selecciona un médico');return;}
+  if(!fecha||!hora){alert('Ingresa fecha y hora');return;}
+  const med=medicos.find(m=>m.id===medicoId);
+  const cita={id:Date.now(),nombre,tel,programa,tipo:tipoSel,medicoId,medicoNombre:med.nombre,medicoEmail:med.email,medicoWa:med.wa,fecha,hora,notas};
+  citas.unshift(cita);saveCitas();
+  limpiarForm();
+  showCita(cita.id);
+}
+function limpiarForm(){
+  ['pac-nombre','pac-tel','cita-notas','cita-fecha','cita-hora'].forEach(id=>document.getElementById(id).value='');
+  ['pac-prog','cita-medico'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  tipoSel='';renderTipoGrid();
+}
+
+/* DETALLE CITA */
+function showCita(id){
+  const c=citas.find(x=>x.id===id);if(!c)return;
+  const d=new Date(c.fecha+'T12:00').toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('modal-cita-title').textContent=c.nombre;
+  document.getElementById('modal-cita-body').innerHTML=`
+    <div style="background:${tipoColor(c.tipo)};color:#fff;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:16px;font-weight:800">${tipoLabel(c.tipo)}</div>
+      <div style="font-size:13px;opacity:.9;margin-top:3px">${d} · ${c.hora}</div>
+    </div>
+    <div style="font-size:13px;color:#444;display:flex;flex-direction:column;gap:6px">
+      <div>👨‍⚕️ <b>${c.medicoNombre||'—'}</b></div>
+      ${c.tel?`<div>📞 ${c.tel}</div>`:''}
+      ${c.programa?`<div>📋 ${c.programa}</div>`:''}
+      ${c.notas?`<div>📝 ${c.notas}</div>`:''}
+    </div>`;
+  document.getElementById('modal-gcal').href=gcalLink(c);
+  document.getElementById('modal-wa').onclick=()=>waPaciente(c);
+  document.getElementById('modal-del').onclick=()=>{if(confirm('¿Eliminar cita?')){citas=citas.filter(x=>x.id!==id);saveCitas();closeCita();renderMes();renderLista();}};
+  document.getElementById('modal-cita').classList.remove('hidden');
+}
+function closeCita(){document.getElementById('modal-cita').classList.add('hidden');}
+
+/* MÉDICOS MODAL */
+tap(document.getElementById('btn-medicos'),()=>{renderMedicosList();document.getElementById('modal-medicos').classList.remove('hidden');});
+function closeMedicos(){document.getElementById('modal-medicos').classList.add('hidden');}
+function renderMedicosList(){
+  const el=document.getElementById('medicos-list');
+  el.innerHTML=medicos.map(m=>`
+    <div class="med-item">
+      <div class="med-av">${initials(m.nombre)}</div>
+      <div class="med-info"><div class="med-name">${m.nombre}</div><div class="med-sub">${m.especialidad} · ${m.email}</div></div>
+      <button class="btn-del" onclick="delMedico(${m.id})">🗑</button>
+    </div>`).join('');
+}
+function agregarMedico(){
+  const nombre=document.getElementById('nm-nombre').value.trim();
+  const esp=document.getElementById('nm-esp').value;
+  const email=document.getElementById('nm-email').value.trim();
+  const wa=document.getElementById('nm-wa').value.trim();
+  if(!nombre||!esp||!email){alert('Completa nombre, especialidad y correo');return;}
+  medicos.push({id:Date.now(),nombre,especialidad:esp,email,wa});
+  saveMedicos();renderMedicosList();
+  ['nm-nombre','nm-email','nm-wa'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nm-esp').selectedIndex=0;
+}
+function delMedico(id){if(!confirm('¿Eliminar médico?'))return;medicos=medicos.filter(m=>m.id!==id);saveMedicos();renderMedicosList();}
+
+/* NUEVA CITA DESDE TOP */
+tap(document.getElementById('btn-nueva-top'),()=>switchTab('nueva'));
+
+/* ALERTAS */
+function getCitasMed(mId,periodo){
+  const lun=getLunes(),dom=getDomingo();
+  return citas.filter(c=>{
+    if(c.medicoId!==mId)return false;
+    return periodo==='hoy'?c.fecha===hoyStr:c.fecha>=lun&&c.fecha<=dom;
+  }).sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora));
+}
+function buildMsg(med,lista,periodo){
+  const lbl=periodo==='hoy'?'HOY':'ESTA SEMANA';
+  if(!lista.length)return`No hay citas para ${med.nombre} ${lbl}.`;
+  return`📅 AGENDA ${lbl} — SCOPE HEALTHCARE\n${med.nombre} | ${med.especialidad}\n\n`+
+    lista.map((c,i)=>{
+      const fd=new Date(c.fecha+'T12:00').toLocaleDateString('es-CO',{weekday:'short',day:'2-digit',month:'short'});
+      return`${i+1}. ${fd} ${c.hora}\n   👤 ${c.nombre}\n   🏥 ${tipoLabel(c.tipo)}${c.programa?' · '+c.programa:''}${c.notas?'\n   📝 '+c.notas:''}`;
+    }).join('\n\n')+`\n\nTotal: ${lista.length} cita(s)`;
+}
+const SCOPE_EMAIL='agendamiento.scopehealthcare@gmail.com';
+const SCOPE_WA='573103445645';
+
+function enviarEmail(){
+  const mId=parseInt(document.getElementById('alerta-medico').value);
+  const per=document.getElementById('alerta-periodo').value;
+  if(!mId){alert('Selecciona un médico');return;}
+  const med=medicos.find(m=>m.id===mId);
+  const lista=getCitasMed(mId,per);
+  const lbl=per==='hoy'?'del día':'semanal';
+  const sub=encodeURIComponent(`Scope Healthcare — Agenda ${lbl} | ${med.nombre}`);
+  // Envía desde el correo corporativo al médico, con copia al corporativo
+  window.open(`mailto:${med.email}?cc=${SCOPE_EMAIL}&subject=${sub}&body=${encodeURIComponent(buildMsg(med,lista,per))}`,'_blank');
+  okMsg('✅ Correo generado para '+med.nombre+' (CC: agendamiento.scopehealthcare@gmail.com)');
+}
+
+function enviarEmailDiario(){
+  // Envía resumen diario de TODOS los médicos al correo corporativo
+  const per='hoy';
+  let cuerpo=`📅 RESUMEN DIARIO DE AGENDA — SCOPE HEALTHCARE\n${new Date().toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).toUpperCase()}\n${'─'.repeat(40)}\n\n`;
+  medicos.forEach(med=>{
+    const lista=getCitasMed(med.id,per);
+    cuerpo+=`👨‍⚕️ ${med.nombre} | ${med.especialidad}\n`;
+    if(!lista.length){cuerpo+=`   Sin citas hoy.\n\n`;return;}
+    lista.forEach((c,i)=>{
+      const fd=new Date(c.fecha+'T12:00').toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+      cuerpo+=`   ${i+1}. ${c.hora} — ${c.nombre} · ${tipoLabel(c.tipo)}${c.programa?' ('+c.programa+')':''}${c.notas?'\n      📝 '+c.notas:''}\n`;
+    });
+    cuerpo+=`   Subtotal: ${lista.length} cita(s)\n\n`;
+  });
+  cuerpo+=`Total general: ${citas.filter(c=>c.fecha===hoyStr).length} cita(s) hoy.\nScope Healthcare — agendamiento.scopehealthcare@gmail.com`;
+  const sub=encodeURIComponent(`Scope Healthcare — Resumen diario ${hoyStr}`);
+  window.open(`mailto:${SCOPE_EMAIL}?subject=${sub}&body=${encodeURIComponent(cuerpo)}`,'_blank');
+  okMsg('✅ Resumen diario generado para agendamiento.scopehealthcare@gmail.com');
+}
+
+function enviarWA(){
+  const mId=parseInt(document.getElementById('alerta-medico').value);
+  const per=document.getElementById('alerta-periodo').value;
+  if(!mId){alert('Selecciona un médico');return;}
+  const med=medicos.find(m=>m.id===mId);
+  const lista=getCitasMed(mId,per);
+  // Envía desde el WA corporativo de Scope al médico
+  window.open(`https://wa.me/${med.wa&&med.wa!==''?med.wa.replace(/[^0-9]/g,''):SCOPE_WA}?text=${encodeURIComponent(buildMsg(med,lista,per))}`,'_blank');
+  okMsg('✅ WhatsApp generado para '+med.nombre);
+}
+
+function enviarWADiario(){
+  // Resumen diario completo por WhatsApp corporativo
+  let msg=`📅 *AGENDA DEL DÍA — SCOPE HEALTHCARE*\n${new Date().toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long'}).toUpperCase()}\n\n`;
+  medicos.forEach(med=>{
+    const lista=getCitasMed(med.id,'hoy');
+    msg+=`👨‍⚕️ *${med.nombre}*\n`;
+    if(!lista.length){msg+=`Sin citas hoy.\n\n`;return;}
+    lista.forEach((c,i)=>{msg+=`${i+1}. ${c.hora} — ${c.nombre} · ${tipoLabel(c.tipo)}\n`;});
+    msg+=`\n`;
+  });
+  msg+=`Total: ${citas.filter(c=>c.fecha===hoyStr).length} cita(s) 🏥`;
+  window.open(`https://wa.me/${SCOPE_WA}?text=${encodeURIComponent(msg)}`,'_blank');
+  okMsg('✅ Resumen diario por WhatsApp generado');
+}
+function okMsg(msg){const el=document.getElementById('alerta-ok');el.textContent=msg;el.classList.remove('hidden');setTimeout(()=>el.classList.add('hidden'),4000);}
+
+/* UTILS */
+function gcalLink(c){
+  const dt=c.fecha.replace(/-/g,'')+`T${c.hora.replace(':','')}00`;
+  const end=new Date(c.fecha+'T'+c.hora);end.setHours(end.getHours()+1);
+  const edt=end.toISOString().replace(/[-:]/g,'').slice(0,15);
+  return`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(tipoLabel(c.tipo)+' — '+c.nombre)}&dates=${dt}/${edt}&details=${encodeURIComponent('Paciente: '+c.nombre+'\nTel: '+(c.tel||'—')+'\nPrograma: '+(c.programa||'—')+'\nNotas: '+(c.notas||'—'))}&sf=true&output=xml`;
+}
+function waPaciente(c){
+  if(!c.tel){alert('Sin teléfono registrado');return;}
+  const fd=new Date(c.fecha+'T12:00').toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long'});
+  window.open(`https://wa.me/${c.tel.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(`Hola ${c.nombre.split(' ')[0]}, le confirmamos su cita de *${tipoLabel(c.tipo)}* en Scope Healthcare para el *${fd} a las ${c.hora}*. Por favor llegar 10 minutos antes. 🏥`)}`,'_blank');
+}
+function getLunes(){const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));return d.toISOString().slice(0,10);}
+function getDomingo(){const d=new Date();d.setDate(d.getDate()+(7-(d.getDay()||7)+1));return d.toISOString().slice(0,10);}
+function initials(n){return n.replace(/^Dra?\.?\s*/i,'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function tap(el,fn){el.addEventListener('click',fn);el.addEventListener('touchend',function(e){e.preventDefault();fn();});}
+
+renderSelects();
+renderMes();
+
+// ── Opción C: Recordatorio diario al abrir la app ──
+(function(){
+  const hoyKey='scope_alerta_'+hoyStr;
+  if(localStorage.getItem(hoyKey)) return; // ya se mostró hoy
+  const total=citas.filter(c=>c.fecha===hoyStr).length;
+  if(!total) return;
+  const banner=document.createElement('div');
+  banner.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#1a3d5c;color:#fff;z-index:200;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 -4px 16px rgba(0,0,0,.18)';
+  banner.innerHTML=`
+    <div>
+      <div style="font-size:13px;font-weight:800">📅 Hoy hay ${total} cita(s)</div>
+      <div style="font-size:11px;color:#4db8c8;margin-top:2px">Envía el resumen diario ahora</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="enviarEmailDiario();this.closest('div[style]').remove()" style="padding:9px 14px;background:#4db8c8;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">📧 Correo</button>
+      <button onclick="enviarWADiario();this.closest('div[style]').remove()" style="padding:9px 14px;background:#25d366;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">💬 WA</button>
+      <button onclick="localStorage.setItem('${hoyKey}','1');this.closest('div[style]').remove()" style="padding:9px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer">✕</button>
+    </div>`;
+  document.body.appendChild(banner);
+  localStorage.setItem(hoyKey,'1');
+})();
+</script>
+</body>
+</html>
